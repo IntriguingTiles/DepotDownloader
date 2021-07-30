@@ -449,7 +449,7 @@ namespace DepotDownloader
             File.Move(fileStagingPath, fileFinalPath);
         }
 
-        public static async Task DownloadAppAsync(uint appId, List<(uint depotId, ulong manifestId)> depotManifestIds, string branch, string os, string arch, string language, bool lv, bool isUgc)
+        public static async Task DownloadAppAsync(uint appId, List<(uint depotId, ulong manifestId)> depotManifestIds, string branch, string os, string arch, string language, bool lv, bool isUgc, byte[] depotKey = null)
         {
             cdnPool = new CDNClientPool(steam3, appId);
 
@@ -478,7 +478,14 @@ namespace DepotDownloader
                 else
                 {
                     var contentName = GetAppOrDepotName(INVALID_DEPOT_ID, appId);
-                    throw new ContentDownloaderException(String.Format("App {0} ({1}) is not available from this account.", appId, contentName));
+                    if (depotKey is not null)
+                    {
+                        Console.WriteLine(String.Format("App {0} ({1}) is not available from this account.", appId, contentName));
+                    }
+                    else
+                    {
+                        throw new ContentDownloaderException(String.Format("App {0} ({1}) is not available from this account.", appId, contentName));
+                    }
                 }
             }
 
@@ -577,7 +584,7 @@ namespace DepotDownloader
 
             foreach (var depotManifest in depotManifestIds)
             {
-                var info = GetDepotInfo(depotManifest.Item1, appId, depotManifest.Item2, branch);
+                var info = GetDepotInfo(depotManifest.Item1, appId, depotManifest.Item2, branch, depotKey);
                 if (info != null)
                 {
                     infos.Add(info);
@@ -595,7 +602,7 @@ namespace DepotDownloader
             }
         }
 
-        static DepotDownloadInfo GetDepotInfo(uint depotId, uint appId, ulong manifestId, string branch)
+        static DepotDownloadInfo GetDepotInfo(uint depotId, uint appId, ulong manifestId, string branch, byte[] providedDepotKey)
         {
             if (steam3 != null && appId != INVALID_APP_ID)
                 steam3.RequestAppInfo(appId);
@@ -606,7 +613,8 @@ namespace DepotDownloader
             {
                 Console.WriteLine("Depot {0} ({1}) is not available from this account.", depotId, contentName);
 
-                return null;
+                if (providedDepotKey is null)
+                    return null;
             }
 
             if (manifestId == INVALID_MANIFEST_ID)
@@ -636,16 +644,32 @@ namespace DepotDownloader
             }
 
             steam3.RequestDepotKey(depotId, appId);
-            if (!steam3.DepotKeys.ContainsKey(depotId))
+            byte[] depotKey;
+            if (!steam3.DepotKeys.ContainsKey(depotId) && providedDepotKey is not null)
+            {
+                Console.WriteLine("Using provided depot key for {0}.", depotId);
+                depotKey = providedDepotKey;
+            }
+            else if (!steam3.DepotKeys.ContainsKey(depotId))
             {
                 Console.WriteLine("No valid depot key for {0}, unable to download.", depotId);
                 return null;
             }
-
-            var depotKey = steam3.DepotKeys[depotId];
+            else
+            {
+                depotKey = steam3.DepotKeys[depotId];
+            }
 
             var info = new DepotDownloadInfo(depotId, manifestId, installDir, contentName);
             info.depotKey = depotKey;
+
+            Console.Write("Depot key is: ");
+            foreach (var b in depotKey)
+            {
+                Console.Write("{0:x2}", b);
+            }
+            Console.WriteLine();
+
             return info;
         }
 

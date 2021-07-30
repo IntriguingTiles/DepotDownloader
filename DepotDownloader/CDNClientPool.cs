@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -166,7 +166,8 @@ namespace DepotDownloader
                 return result.Token;
             }
 
-            throw new Exception($"Failed to retrieve CDN token for server {server.Host} depot {depotId}");
+            // lol
+            return "";
         }
 
         public void ReturnConnection(CDNClient.Server server)

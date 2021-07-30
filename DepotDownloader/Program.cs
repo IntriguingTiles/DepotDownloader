@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -226,11 +226,13 @@ namespace DepotDownloader
                     depotManifestIds.AddRange(depotIdList.Select(depotId => (depotId, ContentDownloader.INVALID_MANIFEST_ID)));
                 }
 
+                var depotKey = Util.DecodeHexString(GetParameter<string>(args, "-depot-key"));
+
                 if (InitializeSteam(username, password))
                 {
                     try
                     {
-                        await ContentDownloader.DownloadAppAsync(appId, depotManifestIds, branch, os, arch, language, lv, isUGC).ConfigureAwait(false);
+                        await ContentDownloader.DownloadAppAsync(appId, depotManifestIds, branch, os, arch, language, lv, isUGC, depotKey).ConfigureAwait(false);
                     }
                     catch (Exception ex) when (
                         ex is ContentDownloaderException
@@ -369,6 +371,7 @@ namespace DepotDownloader
             Console.WriteLine("Parameters:");
             Console.WriteLine("\t-app <#>\t\t\t\t- the AppID to download.");
             Console.WriteLine("\t-depot <#>\t\t\t\t- the DepotID to download.");
+            Console.WriteLine("\t-depot-key <key>\t\t\t- the depot key to use in hex.");
             Console.WriteLine("\t-manifest <id>\t\t\t- manifest id of content to download (requires -depot, default: current for branch).");
             Console.WriteLine("\t-beta <branchname>\t\t\t- download from specified branch if available (default: Public).");
             Console.WriteLine("\t-betapassword <pass>\t\t- branch password if applicable.");
