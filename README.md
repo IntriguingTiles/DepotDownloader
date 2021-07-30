@@ -1,29 +1,15 @@
-DepotDownloader
+DepotDownloader with depot key support
 ===============
 
 Steam depot downloader utilizing the SteamKit2 library. Supports .NET 5.0
 
-### Downloading one or all depots for an app
+### Downloading one depot for an app using a depot key
 ```
-dotnet DepotDownloader.dll -app <id> [-depot <id> [-manifest <id>]]
-    [-username <username> [-password <password>]] [other options]
-```
-
-For example: `dotnet DepotDownloader.dll -app 730 -depot 731 -manifest 7617088375292372759`
-
-### Downloading a workshop item using pubfile id
-```
-dotnet DepotDownloader.dll -app <id> -pubfile <id> [-username <username> [-password <password>]]
+dotnet DepotDownloader.dll -app <id> -depot <id> [-manifest <id>]]
+    -depot-key <key>
 ```
 
-For example: `dotnet DepotDownloader.dll -app 730 -pubfile 1885082371`
-
-### Downloading a workshop item using ugc id
-```
-dotnet DepotDownloader.dll -app <id> -ugc <id> [-username <username> [-password <password>]]
-```
-
-For example: `dotnet DepotDownloader.dll -app 730 -ugc 770604181014286929`
+For example: `dotnet DepotDownloader.dll -app 220 -depot 221 -depot-key f5e105...`
 
 ## Parameters
 
@@ -31,6 +17,7 @@ Parameter | Description
 --------- | -----------
 -app \<#>				| the AppID to download.
 -depot \<#>				| the DepotID to download.
+-depot-key \<key>       | the depot key to use in hex.
 -manifest \<id>			| manifest id of content to download (requires -depot, default: current for branch).
 -ugc \<#>				| the UGC ID to download.
 -beta \<branchname>		| download from specified branch if available (default: Public).
