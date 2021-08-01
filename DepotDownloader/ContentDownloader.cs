@@ -183,23 +183,30 @@ namespace DepotDownloader
 
         static uint GetSteam3AppBuildNumber(uint appId, string branch)
         {
-            if (appId == INVALID_APP_ID)
+            try
+            {
+                if (appId == INVALID_APP_ID)
+                    return 0;
+
+
+                var depots = GetSteam3AppSection(appId, EAppInfoSection.Depots);
+                var branches = depots["branches"];
+                var node = branches[branch];
+
+                if (node == KeyValue.Invalid)
+                    return 0;
+
+                var buildid = node["buildid"];
+
+                if (buildid == KeyValue.Invalid)
+                    return 0;
+
+                return uint.Parse(buildid.Value);
+            }
+            catch (Exception)
+            {
                 return 0;
-
-
-            var depots = GetSteam3AppSection(appId, EAppInfoSection.Depots);
-            var branches = depots["branches"];
-            var node = branches[branch];
-
-            if (node == KeyValue.Invalid)
-                return 0;
-
-            var buildid = node["buildid"];
-
-            if (buildid == KeyValue.Invalid)
-                return 0;
-
-            return uint.Parse(buildid.Value);
+            }
         }
 
         static ulong GetSteam3DepotManifest(uint depotId, uint appId, string branch)
@@ -566,6 +573,10 @@ namespace DepotDownloader
                         if (!hasSpecificDepots)
                             depotManifestIds.Add((id, INVALID_MANIFEST_ID));
                     }
+                }
+                else
+                {
+                    depotIdsFound.Add(depotManifestIds.First().depotId);
                 }
 
                 if (depotManifestIds.Count == 0 && !hasSpecificDepots)
